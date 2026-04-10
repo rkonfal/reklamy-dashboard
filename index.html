@@ -410,9 +410,9 @@ th.sort-desc::after { content: ' ↓'; }
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
       Doporučení
     </a>
-    <a href="#effectix">
+    <a href="#report-agentura">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-      Report Effectix
+      Report agentury
     </a>
   </nav>
   <div class="sidebar-footer">Vygenerováno 10.04.2026</div>
@@ -834,7 +834,7 @@ th.sort-desc::after { content: ' ↓'; }
   </div>
 
   <!-- ========== EFFECTIX REPORT SECTION ========== -->
-  <div class="section" id="effectix">
+  <div class="section" id="report-agentura">
     <div class="section-title" style="cursor:pointer;user-select:none;" onclick="var b=document.getElementById('effectixBody');var a=document.getElementById('effectixArrow');if(b.style.display==='none'){b.style.display='block';a.textContent='\u25bc';}else{b.style.display='none';a.textContent='\u25ba';}"><span id="effectixArrow">▼</span> 📋 Výtažek z reportu agentury Effectix — březen 2026</div>
     <div id="effectixBody">
       <div class="kpi-grid">
@@ -1186,6 +1186,31 @@ function getGridColor() {
 
 function drawAll() {
   drawDonut('donutMeta',[297668,159313],['#5C2450','#e6a817'],456981);
+  // Attribution CZ březen — Ostatní, Google, Meta, Sklik
+  (function(){
+    const svg = document.getElementById('donutAttrib');
+    if(!svg) return;
+    const data=[6664996,3734149,2187211,2028666];
+    const colors=['#9ca3af','#e6a817','#5C2450','#6366f1'];
+    const labels=['Ostatní','Google','Meta','Sklik'];
+    const total=data.reduce((a,b)=>a+b,0);
+    const cx=90,cy=90,R=70,r=40;
+    let angle=-Math.PI/2, html='';
+    data.forEach((d,i)=>{
+      const sweep=(d/total)*2*Math.PI;
+      const x1=cx+R*Math.cos(angle),y1=cy+R*Math.sin(angle);
+      const x2=cx+R*Math.cos(angle+sweep),y2=cy+R*Math.sin(angle+sweep);
+      const xi1=cx+r*Math.cos(angle),yi1=cy+r*Math.sin(angle);
+      const xi2=cx+r*Math.cos(angle+sweep),yi2=cy+r*Math.sin(angle+sweep);
+      const lg=sweep>Math.PI?1:0;
+      html+=`<path d="M${x1},${y1} A${R},${R} 0 ${lg} 1 ${x2},${y2} L${xi2},${yi2} A${r},${r} 0 ${lg} 0 ${xi1},${yi1} Z" fill="${colors[i]}"><title>${labels[i]}: ${(d/total*100).toFixed(1)}%</title></path>`;
+      angle+=sweep;
+    });
+    const tc=getTextColor();
+    html+=`<text x="${cx}" y="${cy-6}" text-anchor="middle" fill="${tc}" font-size="13" font-weight="800">45,6%</text>`;
+    html+=`<text x="${cx}" y="${cy+12}" text-anchor="middle" fill="${tc}" font-size="9">Ostatní</text>`;
+    svg.innerHTML=html;
+  })();
   drawWeeklyChart();
   drawRevenueChart();
 }
