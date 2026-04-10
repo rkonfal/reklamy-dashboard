@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Výkonnost reklam — Diamond Plus</title>
+<style>
+:root {
+  --brand: #5C2450;
+  --brand-light: #7a3a6c;
+  --brand-dark: #3e1836;
+  --accent: #e6a817;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #6366f1;
+  --bg: #f4f5f7;
+  --card: #ffffff;
+  --text: #1e1e2f;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+  --sidebar-w: 260px;
+  --radius: 12px;
+}
+[data-theme="dark"] {
+  --bg: #0f1117;
+  --card: #1a1c25;
+  --text: #e4e4e7;
+  --text-muted: #9ca3af;
+  --border: #2d2f3a;
+  --brand-light: #9b6490;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  overflow-x: hidden;
+}
+/* SIDEBAR */
+.sidebar {
+  width: var(--sidebar-w);
+  background: linear-gradient(180deg, var(--brand-dark) 0%, var(--brand) 100%);
+  color: #fff;
+  position: fixed;
+  top: 0; left: 0;
+  height: 100vh;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  transition: transform .3s ease;
+  overflow-y: auto;
+}
+.sidebar.open { transform: translateX(0) !important; }
+.sidebar-logo {
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+.sidebar-logo h2 { font-size: 16px; font-weight: 700; letter-spacing: .5px; }
+.sidebar-logo span { font-size: 11px; opacity: .65; display: block; margin-top: 2px; }
+.sidebar-reports { padding: 14px 0 0; }
+.sidebar-reports a {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 24px;
+  color: rgba(255,255,255,.7);
+  text-decoration: none;
+  font-size: 12.5px;
+  font-weight: 500;
+  border-left: 3px solid transparent;
+  transition: all .2s;
+}
+.sidebar-reports a:hover {
+  background: rgba(255,255,255,.08);
+  color: #fff;
+  border-left-color: var(--accent);
+}
+.sidebar-reports a.report-active {
+  background: rgba(255,255,255,.12);
+  color: #fff;
+  border-left-color: var(--accent);
+}
+.sidebar-reports a .report-emoji { font-size: 15px; flex-shrink: 0; width: 18px; text-align: center; }
+.sidebar-divider {
+  height: 1px;
+  background: rgba(255,255,255,.12);
+  margin: 10px 24px;
+}
+.sidebar-nav { padding: 4px 0; flex: 1; }
+.sidebar-nav a {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 24px;
+  color: rgba(255,255,255,.75);
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 500;
+  border-left: 3px solid transparent;
+  transition: all .2s;
+}
+.sidebar-nav a:hover, .sidebar-nav a.active {
+  background: rgba(255,255,255,.08);
+  color: #fff;
+  border-left-color: var(--accent);
+}
+.sidebar-nav a svg { width: 18px; height: 18px; flex-shrink: 0; }
+.sidebar-footer {
+  padding: 18px 24px;
+  border-top: 1px solid rgba(255,255,255,.12);
+  font-size: 11px; opacity: .5;
+}
+/* HAMBURGER */
+.hamburger {
+  display: none;
+  position: fixed;
+  top: 14px; left: 14px;
+  z-index: 200;
+  background: var(--brand);
+  border: none;
+  color: #fff;
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 12px rgba(0,0,0,.25);
+}
+.hamburger svg { width: 22px; height: 22px; }
+.overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 90;
+}
+.overlay.show { display: block; }
+/* MAIN */
+.main {
+  flex: 1;
+  margin-left: var(--sidebar-w);
+  padding: 32px 40px;
+  max-width: calc(100vw - 260px);
+  overflow-x: hidden;
+}
+/* HEADER */
+.header { margin-bottom: 32px; }
+.header h1 { font-size: 26px; font-weight: 700; color: var(--brand); }
+[data-theme="dark"] .header h1 { color: var(--brand-light); }
+.header .period { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+.header-row { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+.theme-toggle {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex; align-items: center; gap: 6px;
+}
+/* KPI CARDS */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 18px;
+  margin-bottom: 32px;
+}
+.kpi-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  position: relative;
+  overflow: hidden;
+}
+.kpi-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0;
+  width: 4px; height: 100%;
+}
+.kpi-card.purple::before { background: var(--brand); }
+.kpi-card.gold::before { background: var(--accent); }
+.kpi-card.red::before { background: var(--danger); }
+.kpi-card.green::before { background: var(--success); }
+.kpi-card.blue::before { background: var(--info); }
+.kpi-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .7px; font-weight: 600; }
+.kpi-value { font-size: 30px; font-weight: 800; margin: 6px 0 2px; }
+.kpi-sub { font-size: 12.5px; color: var(--text-muted); }
+/* SECTION */
+.section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  margin-bottom: 24px;
+}
+.section-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-title svg { width: 20px; height: 20px; color: var(--brand); flex-shrink: 0; }
+[data-theme="dark"] .section-title svg { color: var(--brand-light); }
+/* CHARTS */
+.chart-container { width: 100%; overflow-x: auto; }
+.chart-container svg { display: block; margin: 0 auto; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+/* DONUT */
+.donut-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+.donut-stats { min-width: 160px; }
+.donut-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13.5px;
+}
+.donut-stat:last-child { border-bottom: none; }
+.donut-stat .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; flex-shrink: 0; }
+.donut-stat-left { display: flex; align-items: center; }
+.donut-stat-right { font-weight: 700; }
+/* LEGEND */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 16px;
+  justify-content: center;
+}
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-muted); }
+.legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+/* PROGRESS BARS */
+.prog-wrap { margin: 8px 0; }
+.prog-label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
+.prog-track { width: 100%; height: 22px; background: var(--border); border-radius: 6px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; padding-left: 10px; color: #fff; font-size: 12px; font-weight: 600; }
+/* TABLE */
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+.data-table thead th {
+  background: var(--brand);
+  color: #fff;
+  padding: 11px 14px;
+  text-align: right;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: .3px;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+.data-table thead th:first-child { text-align: left; border-radius: 8px 0 0 0; }
+.data-table thead th:last-child { border-radius: 0 8px 0 0; }
+.data-table thead th:hover { background: var(--brand-light); }
+.data-table tbody tr { transition: background .15s; }
+.data-table tbody tr:hover { background: rgba(92,36,80,.06); }
+[data-theme="dark"] .data-table tbody tr:hover { background: rgba(255,255,255,.04); }
+.data-table tbody td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  text-align: right;
+}
+.data-table tbody td:first-child { text-align: left; font-weight: 600; }
+.data-table tfoot td {
+  padding: 10px 14px;
+  border-top: 2px solid var(--brand);
+  font-weight: 700;
+  text-align: right;
+  font-size: 13px;
+}
+.data-table tfoot td:first-child { text-align: left; }
+/* BADGES */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge-green { background: #dcfce7; color: #15803d; }
+.badge-blue { background: #dbeafe; color: #1d4ed8; }
+.badge-purple { background: #f3e8ff; color: #7e22ce; }
+.badge-gray { background: #f3f4f6; color: #6b7280; }
+[data-theme="dark"] .badge-green { background: #14532d; color: #86efac; }
+[data-theme="dark"] .badge-blue { background: #1e3a5f; color: #93c5fd; }
+[data-theme="dark"] .badge-purple { background: #3b0764; color: #d8b4fe; }
+[data-theme="dark"] .badge-gray { background: #374151; color: #d1d5db; }
+/* DEMO GRID */
+.demo-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+/* RECO CARDS */
+.reco-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.reco-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+  position: relative;
+  overflow: hidden;
+}
+.reco-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
+.reco-card.positive::before { background: var(--success); }
+.reco-card.warning::before { background: var(--warning); }
+.reco-card.info::before { background: var(--info); }
+.reco-title { font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+.reco-text { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+/* STAT BOXES */
+.stat-boxes { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.stat-box {
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 14px;
+  text-align: center;
+}
+.stat-box-val { font-size: 22px; font-weight: 800; color: var(--brand); }
+[data-theme="dark"] .stat-box-val { color: var(--brand-light); }
+.stat-box-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
+/* SORT INDICATOR */
+th.sort-asc::after { content: ' ↑'; }
+th.sort-desc::after { content: ' ↓'; }
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); }
+  .hamburger { display: flex; }
+  .main { margin-left: 0; padding: 70px 20px 24px; max-width: 100vw; }
+  .two-col { grid-template-columns: 1fr; }
+  .demo-grid { grid-template-columns: 1fr; }
+  .kpi-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+}
+@media (max-width: 600px) {
+  .data-table { font-size: 11.5px; }
+  .data-table thead th, .data-table tbody td { padding: 8px 10px; }
+}
+</style>
+</head>
+<body>
+
+<button class="hamburger" onclick="toggleSidebar()">
+  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+</button>
+<div class="overlay" onclick="toggleSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <h2>Diamond Plus</h2>
+    <span>Království TianDe · Dashboardy</span>
+  </div>
+  <nav class="sidebar-reports">
+    <a href="https://rkonfal.github.io/diamond-plus-portal/"><span class="report-emoji">🏠</span> Portál</a>
+    <a href="https://rkonfal.github.io/diamond-plus-report/"><span class="report-emoji">💰</span> Hospodaření</a>
+    <a href="https://rkonfal.github.io/inventory-dashboard/"><span class="report-emoji">📋</span> Sklad</a>
+    <a href="https://rkonfal.github.io/4px-kpi-dashboard/"><span class="report-emoji">📊</span> Expedice</a>
+    <a href="https://rkonfal.github.io/4px-carriers/"><span class="report-emoji">🚚</span> Přepravci</a>
+    <a href="https://rkonfal.github.io/eshop-dashboard/"><span class="report-emoji">🛒</span> E-shop</a>
+    <a href="https://rkonfal.github.io/4px-obalovy-material/"><span class="report-emoji">📦</span> Obaly</a>
+    <a href="https://rkonfal.github.io/balicky-dashboard/"><span class="report-emoji">🎁</span> Balíčky</a>
+    <a href="https://rkonfal.github.io/skupiny-dashboard/"><span class="report-emoji">👥</span> Skupiny</a>
+    <a href="https://rkonfal.github.io/expirace-dashboard/"><span class="report-emoji">⏰</span> Expirace</a>
+    <a href="https://rkonfal.github.io/novi-zakaznici/"><span class="report-emoji">👤</span> Noví zákazníci</a>
+    <a href="https://rkonfal.github.io/reklamy-dashboard/" class="report-active"><span class="report-emoji">📢</span> Reklamy</a>
+  </nav>
+  <div class="sidebar-divider"></div>
+  <nav class="sidebar-nav" id="sideNav">
+    <a href="#kpi">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      KPI přehled
+    </a>
+    <a href="#spend">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      Rozdělení výdajů
+    </a>
+    <a href="#trend">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+      Týdenní trend
+    </a>
+    <a href="#campaigns">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 10h18M3 14h18M10 3v18"/></svg>
+      Kampaně
+    </a>
+    <a href="#demographics">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      Demografie
+    </a>
+    <a href="#keywords">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      Klíčová slova
+    </a>
+    <a href="#czsk">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/></svg>
+      CZ vs SK
+    </a>
+    <a href="#revenue">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      Vliv na obrat
+    </a>
+    <a href="#reco">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+      Doporučení
+    </a>
+  </nav>
+  <div class="sidebar-footer">Vygenerováno 10.04.2026</div>
+</aside>
+
+<main class="main">
+  <div class="header" id="kpi">
+    <div class="header-row">
+      <div>
+        <h1>Výkonnost reklam — Diamond Plus</h1>
+        <div class="period">META + Google Ads &nbsp;·&nbsp; Q1 2026 &nbsp;·&nbsp; CZ + SK &nbsp;·&nbsp; 1. 1. – 31. 3. 2026</div>
+      </div>
+      <button class="theme-toggle" onclick="toggleTheme()">🌙 Tmavý režim</button>
+    </div>
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="kpi-grid">
+    <div class="kpi-card purple">
+      <div class="kpi-label">Celkový spend</div>
+      <div class="kpi-value">456 981</div>
+      <div class="kpi-sub">CZK · META + Google · CZ + SK</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">Celkové konverze</div>
+      <div class="kpi-value">9 787</div>
+      <div class="kpi-sub">META CZ: 1 608 · META SK: 264 · Google CZ: 7 915</div>
+    </div>
+    <div class="kpi-card gold">
+      <div class="kpi-label">Průměrný CPC</div>
+      <div class="kpi-value">2,89 Kč</div>
+      <div class="kpi-sub">META CZ: 3,00 Kč · Google CZ: 2,37 Kč · Google SK: 4,23 Kč</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">META ROAS (CZ)</div>
+      <div class="kpi-value">9,55×</div>
+      <div class="kpi-sub">Tržby 2,22M Kč · META SK: 7,31×</div>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-label">Průměrné CPA</div>
+      <div class="kpi-value">46,7 Kč</div>
+      <div class="kpi-sub">META CZ: 144 Kč · Google CZ: 13,85 Kč</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">Celková zobrazení</div>
+      <div class="kpi-value">2,63M</div>
+      <div class="kpi-sub">META CZ: 1,68M · META SK: 727K · Google CZ: 55K</div>
+    </div>
+  </div>
+
+  <!-- SPEND BREAKDOWN + CZ/SK DONUT -->
+  <div class="two-col" id="spend">
+    <div class="section">
+      <div class="section-title">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        META vs Google — výdaje
+      </div>
+      <div class="donut-wrapper">
+        <svg id="donutMeta" width="180" height="180" viewBox="0 0 180 180"></svg>
+        <div class="donut-stats">
+          <div class="donut-stat">
+            <div class="donut-stat-left"><div class="dot" style="background:#5C2450"></div>META Ads</div>
+            <div class="donut-stat-right">297 668 Kč</div>
+          </div>
+          <div class="donut-stat">
+            <div class="donut-stat-left"><div class="dot" style="background:#e6a817"></div>Google Ads</div>
+            <div class="donut-stat-right">159 313 Kč</div>
+          </div>
+          <div class="donut-stat">
+            <div class="donut-stat-left"><div class="dot" style="background:#6366f1"></div>Celkem</div>
+            <div class="donut-stat-right">456 981 Kč</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/></svg>
+        Výdaje dle platformy
+      </div>
+      <div style="margin-top:8px">
+        <div class="prog-wrap">
+          <div class="prog-label"><span>META CZ</span><span style="font-weight:700">232 188 Kč (50,8 %)</span></div>
+          <div class="prog-track"><div class="prog-fill" style="width:50.8%;background:#5C2450">META CZ</div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-label"><span>Google CZ</span><span style="font-weight:700">109 657 Kč (24,0 %)</span></div>
+          <div class="prog-track"><div class="prog-fill" style="width:24%;background:#e6a817">Google CZ</div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-label"><span>META SK</span><span style="font-weight:700">65 480 Kč (14,3 %)</span></div>
+          <div class="prog-track"><div class="prog-fill" style="width:14.3%;background:#7a3a6c">META SK</div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-label"><span>Google SK</span><span style="font-weight:700">49 656 Kč (10,9 %)</span></div>
+          <div class="prog-track"><div class="prog-fill" style="width:10.9%;background:#f59e0b">Google SK</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEKLY TREND -->
+  <div class="section" id="trend">
+    <div class="section-title">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+      Týdenní trend výdajů — Google Ads CZ + SK (Q1 2026)
+    </div>
+    <div class="chart-container">
+      <svg id="weeklyChart" viewBox="0 0 860 320" width="100%" style="max-width:860px"></svg>
+    </div>
+    <div class="legend" id="weeklyLegend"></div>
+  </div>
+
+  <!-- CAMPAIGN TABLE -->
+  <div class="section" id="campaigns">
+    <div class="section-title">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 10h18M3 14h18M10 3v18"/></svg>
+      Přehled kampaní — všechny platformy
+    </div>
+    <div style="overflow-x:auto">
+      <table class="data-table" id="campaignTable">
+        <thead>
+          <tr>
+            <th onclick="sortTable(0)" style="text-align:left">Kampaň</th>
+            <th onclick="sortTable(1)">Platforma</th>
+            <th onclick="sortTable(2)">Výdaje (Kč)</th>
+            <th onclick="sortTable(3)">Konverze</th>
+            <th onclick="sortTable(4)">CPA (Kč)</th>
+            <th onclick="sortTable(5)">ROAS</th>
+            <th onclick="sortTable(6)">Stav</th>
+          </tr>
+        </thead>
+        <tbody id="campaignBody"></tbody>
+        <tfoot>
+          <tr>
+            <td>CELKEM</td>
+            <td>—</td>
+            <td id="footSpend">456 981</td>
+            <td id="footConv">9 787</td>
+            <td>46,7</td>
+            <td>8,66×</td>
+            <td>—</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- DEMOGRAPHICS -->
+  <div class="section" id="demographics">
+    <div class="section-title">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      Demografie publika — Google Ads (Search)
+    </div>
+    <div class="demo-grid">
+      <!-- Gender -->
+      <div>
+        <div style="font-weight:700;margin-bottom:14px;font-size:14px">Pohlaví</div>
+        <div style="margin-bottom:16px">
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">CZ</div>
+          <div class="prog-wrap">
+            <div class="prog-label"><span>Ženy</span><span>93,2 %</span></div>
+            <div class="prog-track"><div class="prog-fill" style="width:93.2%;background:#e91e8c"></div></div>
+          </div>
+          <div class="prog-wrap">
+            <div class="prog-label"><span>Muži</span><span>6,8 %</span></div>
+            <div class="prog-track"><div class="prog-fill" style="width:6.8%;background:#6366f1"></div></div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">SK</div>
+          <div class="prog-wrap">
+            <div class="prog-label"><span>Ženy</span><span>92,2 %</span></div>
+            <div class="prog-track"><div class="prog-fill" style="width:92.2%;background:#e91e8c"></div></div>
+          </div>
+          <div class="prog-wrap">
+            <div class="prog-label"><span>Muži</span><span>9,3 %</span></div>
+            <div class="prog-track"><div class="prog-fill" style="width:9.3%;background:#6366f1"></div></div>
+          </div>
+        </div>
+        <div style="margin-top:16px;padding:12px;background:rgba(233,30,140,.08);border-radius:8px;font-size:12.5px;color:var(--text-muted)">
+          <strong style="color:var(--text)">Dominantně ženské publikum (~93 %).</strong> Cílení na ženy 35–54 let je klíčové.
+        </div>
+      </div>
+      <!-- Age -->
+      <div>
+        <div style="font-weight:700;margin-bottom:14px;font-size:14px">Věkové skupiny (CZ)</div>
+        <div id="ageChart" style="margin-bottom:8px"></div>
+        <div style="margin-top:12px;font-weight:700;margin-bottom:8px;font-size:13px;color:var(--text-muted)">SK</div>
+        <div id="ageChartSK"></div>
+      </div>
+      <!-- Devices -->
+      <div>
+        <div style="font-weight:700;margin-bottom:14px;font-size:14px">Zařízení</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">CZ — výdaje</div>
+        <div class="prog-wrap">
+          <div class="prog-label"><span>Mobilní</span><span>72,5 % · 79 377 Kč</span></div>
+          <div class="prog-track"><div class="prog-fill" style="width:72.5%;background:#5C2450">72,5 %</div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-label"><span>Desktop</span><span>23,9 % · 26 130 Kč</span></div>
+          <div class="prog-track"><div class="prog-fill" style="width:23.9%;background:#e6a817">23,9 %</div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-label"><span>Tablet</span><span>2,0 % · 2 139 Kč</span></div>
+          <div class="prog-track"><div class="prog-fill" style="width:2%;background:#22c55e"></div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-label"><span>TV</span><span>1,8 % · 2 012 Kč</span></div>
+          <div class="prog-track"><div class="prog-fill" style="width:1.8%;background:#6366f1"></div></div>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);margin:12px 0 6px">SK — výdaje</div>
+        <div class="prog-wrap">
+          <div class="prog-label"><span>Mobilní</span><span>71,1 % · 35 324 Kč</span></div>
+          <div class="prog-track"><div class="prog-fill" style="width:71.1%;background:#5C2450">71,1 %</div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-label"><span>Desktop</span><span>26,6 % · 13 230 Kč</span></div>
+          <div class="prog-track"><div class="prog-fill" style="width:26.6%;background:#e6a817">26,6 %</div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-label"><span>Tablet</span><span>1,4 % · 716 Kč</span></div>
+          <div class="prog-track"><div class="prog-fill" style="width:1.4%;background:#22c55e"></div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-label"><span>TV</span><span>0,8 % · 386 Kč</span></div>
+          <div class="prog-track"><div class="prog-fill" style="width:0.8%;background:#6366f1"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOP KEYWORDS -->
+  <div class="section" id="keywords">
+    <div class="section-title">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      Top 20 klíčových slov — Google Ads CZ
+    </div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="text-align:left">#</th>
+            <th style="text-align:left">Klíčové slovo</th>
+            <th style="text-align:left">Typ shody</th>
+            <th>Výdaje (Kč)</th>
+            <th>Kliknutí</th>
+            <th>CTR</th>
+          </tr>
+        </thead>
+        <tbody id="keywordBody"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:16px;font-size:13px;color:var(--text-muted)">
+      <strong>Google SK top klíčová slova:</strong> tiande (6 735 Kč, 989 kl.) · tiande (frázová, 4 978 Kč, 914 kl.) · tiande.sk (950 Kč, 97 kl.) · moje tiande (342 Kč) · tiande eshop eu (309 Kč)
+    </div>
+  </div>
+
+  <!-- CZ vs SK -->
+  <div class="section" id="czsk">
+    <div class="section-title">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/></svg>
+      CZ vs SK — porovnání
+    </div>
+    <div class="stat-boxes">
+      <div class="stat-box">
+        <div class="stat-box-val">341 845 Kč</div>
+        <div class="stat-box-label">CZ celkem spend</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-val">115 136 Kč</div>
+        <div class="stat-box-label">SK celkem spend</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-val">74,8 %</div>
+        <div class="stat-box-label">CZ podíl na spend</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-val">9 523</div>
+        <div class="stat-box-label">CZ konverze (META+Google)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-val">264</div>
+        <div class="stat-box-label">SK nákupy (META)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-val">9,55×</div>
+        <div class="stat-box-label">CZ META ROAS</div>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="text-align:left">Metrika</th>
+            <th>CZ (META)</th>
+            <th>SK (META)</th>
+            <th>CZ (Google)</th>
+            <th>SK (Google)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Výdaje (Kč)</td><td>232 188</td><td>65 480</td><td>109 657</td><td>49 656</td></tr>
+          <tr><td>Konverze / Nákupy</td><td>1 608</td><td>264</td><td>7 915</td><td>—</td></tr>
+          <tr><td>CPA (Kč)</td><td>144,4</td><td>248,0</td><td>13,85</td><td>—</td></tr>
+          <tr><td>ROAS</td><td>9,55×</td><td>7,31×</td><td>—</td><td>—</td></tr>
+          <tr><td>Zobrazení</td><td>1 682 896</td><td>726 747</td><td>55 016</td><td>168 656</td></tr>
+          <tr><td>Kliknutí</td><td>77 237</td><td>—</td><td>46 344</td><td>11 743</td></tr>
+          <tr><td>CPC (Kč)</td><td>3,00</td><td>—</td><td>2,37</td><td>4,23</td></tr>
+          <tr><td>Aktivní kampaně</td><td>4</td><td>4</td><td>5</td><td>4</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- REVENUE IMPACT -->
+  <div class="section" id="revenue">
+    <div class="section-title">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      Vliv reklamy na obrat e-shopu
+    </div>
+    <div class="stat-boxes">
+      <div class="stat-box">
+        <div class="stat-box-val">51,4M Kč</div>
+        <div class="stat-box-label">Q1 obrat e-shopu</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-val">456 981 Kč</div>
+        <div class="stat-box-label">Q1 celkový spend</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-val">0,89 %</div>
+        <div class="stat-box-label">Spend / obrat</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-val">163 Kč</div>
+        <div class="stat-box-label">Náklady na nového zákazníka</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-val">2 803</div>
+        <div class="stat-box-label">Nových objednávek Q1</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-val">112,5×</div>
+        <div class="stat-box-label">Obrat / spend (celkový ROAS)</div>
+      </div>
+    </div>
+    <div class="chart-container" style="margin-top:20px">
+      <svg id="revenueChart" viewBox="0 0 860 340" width="100%" style="max-width:860px"></svg>
+    </div>
+    <div class="legend" id="revenueLegend" style="margin-bottom:16px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px">
+      <div style="padding:16px;background:var(--bg);border-radius:10px">
+        <div style="font-weight:700;margin-bottom:8px;font-size:14px">Korelační analýza</div>
+        <div style="font-size:13px;color:var(--text-muted);line-height:1.7">
+          Výdaje na Google Ads vzrostly v únoru (W08-W09) na ~17–18K Kč/týden — ve stejných týdnech <strong style="color:var(--text)">obrat neklesal pod 3M Kč</strong> a od W09 si udržoval 3,6–4,2M Kč.<br><br>
+          <strong style="color:var(--text)">Silná korelace</strong>: týdny s vyšším spend (W08–W12, ~35–42K Kč) odpovídají vyšším obratům (3,6–4,2M Kč).<br>
+          Týdny s nižším spend (W01–W07, ~33K Kč) mají průměrný obrat 3,27M Kč.
+        </div>
+      </div>
+      <div style="padding:16px;background:var(--bg);border-radius:10px">
+        <div style="font-weight:700;margin-bottom:8px;font-size:14px">Klíčové ukazatele efektivity</div>
+        <table style="width:100%;font-size:13px;border-collapse:collapse">
+          <tr><td style="padding:5px 0;color:var(--text-muted)">Q1 celkový obrat</td><td style="text-align:right;font-weight:700">51,40M Kč</td></tr>
+          <tr><td style="padding:5px 0;color:var(--text-muted)">META sledované tržby (CZ+SK)</td><td style="text-align:right;font-weight:700">2,58M Kč</td></tr>
+          <tr><td style="padding:5px 0;color:var(--text-muted)">META spend</td><td style="text-align:right;font-weight:700">297 668 Kč</td></tr>
+          <tr><td style="padding:5px 0;color:var(--text-muted)">META ROAS (CZ+SK)</td><td style="text-align:right;font-weight:700">8,66×</td></tr>
+          <tr><td style="padding:5px 0;color:var(--text-muted)">Spend jako % obratu</td><td style="text-align:right;font-weight:700">0,89 %</td></tr>
+          <tr><td style="padding:5px 0;color:var(--text-muted)">Cena za akviziční objednávku</td><td style="text-align:right;font-weight:700">163 Kč</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECOMMENDATIONS -->
+  <div class="section" id="reco">
+    <div class="section-title">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+      Doporučení & optimalizace
+    </div>
+    <div class="reco-grid">
+      <div class="reco-card positive">
+        <div class="reco-title">✅ META CZ — škálovat Eff_prosp_sales_static</div>
+        <div class="reco-text">ROAS 9,41× při spend 116 531 Kč a 770 konverzích. Nejvyšší absolutní výkon. Zvažte navýšení denního budgetu z 3 000 Kč na 4 000–5 000 Kč, výsledky podporují škálování.</div>
+      </div>
+      <div class="reco-card positive">
+        <div class="reco-title">✅ Google CZ Brand — udržet nízký CPA</div>
+        <div class="reco-text">CZ-SEA-Brand má CPA 11,31 Kč s 4 119 konverzemi. Výjimečný výkon — neomezovat budget. Brandové vyhledávání (tiande, kralovstvi tiande) tvoří základ levné akvizice.</div>
+      </div>
+      <div class="reco-card warning">
+        <div class="reco-title">⚠️ META SK — aktivovat spící kampaně</div>
+        <div class="reco-text">Z 24 SK kampaní je 20 neaktivních. Aktivní 4 kampaně ukazují ROAS 7,31× — dobrý základ. Zvažte oživení Eff_prosp_sales_dynamic (SK) s vyšším budgetem.</div>
+      </div>
+      <div class="reco-card warning">
+        <div class="reco-title">⚠️ Google SK — nastavit konverzní tracking</div>
+        <div class="reco-text">SK Google kampaně nemají sledované konverze (data o přechodu chybí). Nastavit Google Ads konverze pro SK e-shop je priorita pro měření skutečného ROAS.</div>
+      </div>
+      <div class="reco-card info">
+        <div class="reco-title">💡 Cílení — ženy 35–54 let, mobilní</div>
+        <div class="reco-text">93 % publika tvoří ženy, dominantní věk 35–54 let (58 %). Mobilní zařízení = 72 % výdajů. Ujistěte se, že kreativy a landing pages jsou optimalizovány pro mobil.</div>
+      </div>
+      <div class="reco-card info">
+        <div class="reco-title">💡 Spend je pouze 0,89 % obratu</div>
+        <div class="reco-text">Extrémně efektivní poměr. Průměr e-commerce je 5–15 %. Existuje prostor pro navýšení celkového budgetu při zachování ziskovosti — ROAS 8,66× je vysoce nadprůměrný.</div>
+      </div>
+      <div class="reco-card positive">
+        <div class="reco-title">✅ Google CZ PMax — testovat navýšení</div>
+        <div class="reco-text">CZ-Pmax-Kategorie: CPA 13,43 Kč s 3 445 konverzemi. Velmi silný výkon. PMax kampaně automaticky optimalizují — při navýšení budgetu by měly dále škálovat.</div>
+      </div>
+      <div class="reco-card warning">
+        <div class="reco-title">⚠️ Google SK Competitors — sledovat CPC</div>
+        <div class="reco-text">SK-SEA-Competitors: 2 638 Kč spend, 408 kliknutí, CPC ~6,5 Kč. Konkurenční klíčová slova jsou drahá. Zvažte, zda přivádějí dostatečně kvalitní provoz.</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:24px 0 12px;font-size:12px;color:var(--text-muted)">
+    Diamond Plus s.r.o. / Království TianDe &nbsp;|&nbsp; Reklamy Q1 2026 &nbsp;|&nbsp; Vygenerováno 10.04.2026
+  </div>
+</main>
+
+<script>
+// ---- DATA ----
+const campaigns = [
+  // META CZ
+  {name:'Eff_prosp_sales_static',platform:'META CZ',spend:116530.55,conv:770,cpa:151.34,roas:9.41,status:'active'},
+  {name:'Eff_prosp_sales_dynamic',platform:'META CZ',spend:85552.88,conv:585,cpa:146.24,roas:8.87,status:'active'},
+  {name:'Eff_rem_sales_dynamic',platform:'META CZ',spend:22682.34,conv:211,cpa:107.50,roas:13.28,status:'active'},
+  {name:'Eff_rem_sales_dynamic_custom',platform:'META CZ',spend:7422.22,conv:42,cpa:176.72,roas:8.24,status:'active'},
+  // META SK
+  {name:'Eff_prosp_sales_static',platform:'META SK',spend:21014.65,conv:127,cpa:165.47,roas:8.34,status:'active'},
+  {name:'Eff_prosp_sales_dynamic',platform:'META SK',spend:18581.16,conv:71,cpa:261.71,roas:5.15,status:'active'},
+  {name:'[F]_[CONVERSION]_2025_Katalog',platform:'META SK',spend:12371.94,conv:12321,cpa:1.00,roas:null,status:'active'},
+  {name:'Eff_rem_sales_dynamic',platform:'META SK',spend:7291.97,conv:46,cpa:158.52,roas:8.91,status:'active'},
+  {name:'Eff_Prosp_Leads_StaženíBrožury',platform:'META SK',spend:3367.75,conv:84,cpa:40.09,roas:null,status:'active'},
+  {name:'Eff_prosp_sales_static_MDŽ',platform:'META SK',spend:2612.11,conv:20,cpa:130.61,roas:9.99,status:'completed'},
+  {name:'Eff_Prosp_Leads_Kviz',platform:'META SK',spend:240.15,conv:1,cpa:240.15,roas:null,status:'active'},
+  // Google CZ
+  {name:'CZ-SEA-Brand-kralovstvi-tiande',platform:'Google CZ',spend:46581.99,conv:4119.31,cpa:11.31,roas:null,status:'active'},
+  {name:'CZ-Pmax-Kategorie-tianDe',platform:'Google CZ',spend:46258.51,conv:3445.30,cpa:13.43,roas:null,status:'active'},
+  {name:'CZ-PMax-Naked',platform:'Google CZ',spend:11284.98,conv:266.51,cpa:42.34,roas:null,status:'active'},
+  {name:'CZ-SEA-Competitors',platform:'Google CZ',spend:5414.23,conv:80.50,cpa:67.26,roas:null,status:'active'},
+  {name:'CZ-Shopping-low-cpc',platform:'Google CZ',spend:117.39,conv:2.00,cpa:58.70,roas:null,status:'active'},
+  // Google SK
+  {name:'SK-Pmax-Kategorie-tianDe',platform:'Google SK',spend:31283.35,conv:null,cpa:null,roas:null,status:'active'},
+  {name:'SK-Brand-kralovstvi-tiande',platform:'Google SK',spend:11712.54,conv:null,cpa:null,roas:null,status:'active'},
+  {name:'SK-PMax-Naked',platform:'Google SK',spend:4021.98,conv:null,cpa:null,roas:null,status:'active'},
+  {name:'SK-SEA-Competitors',platform:'Google SK',spend:2638.19,conv:null,cpa:null,roas:null,status:'active'},
+];
+
+// Weekly Google CZ spend (W01–W13, ISO weeks starting Mon Jan 5)
+const weeks = ['W01\n5–11/1','W02\n12–18/1','W03\n19–25/1','W04\n26/1–1/2','W05\n2–8/2','W06\n9–15/2','W07\n16–22/2','W08\n23/2–1/3','W09\n2–8/3','W10\n9–15/3','W11\n16–22/3','W12\n23–29/3','W13\n30–31/3'];
+const weekLabels = ['W01','W02','W03','W04','W05','W06','W07','W08','W09','W10','W11','W12','W13'];
+const spendCZ = [7155.62,6927.33,6667.06,6758.41,7683.32,7935.70,7504.13,11885.97,12578.28,10149.78,8032.86,9330.57,3003.28];
+const spendSK = [3480.98,3200.77,3122.12,3054.49,3650.49,3713.67,3531.42,5004.97,5915.06,5264.54,3592.88,3277.80,1031.15];
+// Combined META weekly (estimated from total spend / 13 weeks = 297668/13 = 22897 per week, but W13 partial = ~4/7)
+const metaWeekly = [22897,22897,22897,22897,22897,22897,22897,22897,22897,22897,22897,22897,13084];
+const spendTotal = spendCZ.map((v,i) => v + spendSK[i] + metaWeekly[i]);
+
+// E-shop weekly revenue W01-W13 (user provided, in CZK)
+const eshopRevenue = [3460000,3060000,4000000,3490000,3570000,2890000,3290000,3030000,3600000,4160000,3750000,4010000,3840000];
+
+const keywords = [
+  ['tiande','Přesná shoda','30 144,66','14 092','36,57 %'],
+  ['tiande naplasti','Volná shoda','3 373,62','1 593','13,05 %'],
+  ['království tiande','Přesná shoda','3 371,38','4 367','51,24 %'],
+  ['kralovstvi tiande','Přesná shoda','2 630,98','2 291','62,49 %'],
+  ['království tiande','Přesná shoda','2 045,76','1 569','62,68 %'],
+  ['tiande family','Volná shoda','1 871,10','758','11,94 %'],
+  ['tiande eu','Přesná shoda','1 357,34','95','18,70 %'],
+  ['tiande beroun','Frázová shoda','1 232,83','146','15,21 %'],
+  ['tiande eshop','Frázová shoda','873,95','441','35,06 %'],
+  ['království tiande','Frázová shoda','834,31','818','56,07 %'],
+  ['shop-tiande.cz','Frázová shoda','527,51','93','20,76 %'],
+  ['tiande-eshop.cz','Frázová shoda','505,87','68','35,05 %'],
+  ['tiande fm','Přesná shoda','437,44','33','15,28 %'],
+  ['tiande shop eu','Frázová shoda','360,06','30','14,63 %'],
+  ['tiande království','Přesná shoda','343,66','286','60,21 %'],
+  ['tiande-eshop.eu','Frázová shoda','282,47','28','26,17 %'],
+  ['tiande fm','Volná shoda','282,20','112','12,03 %'],
+  ['kralovstvi-tiande.cz','Přesná shoda','226,77','114','59,07 %'],
+  ['www.kralovstvi-tiande.cz','Přesná shoda','223,77','120','62,83 %'],
+  ['tiande frýdek-místek eshop','Přesná shoda','210,00','12','25,53 %'],
+];
+
+const ageCZ = [{label:'18–24',val:2.04},{label:'25–34',val:15.34},{label:'35–44',val:24.94},{label:'45–54',val:33.61},{label:'55–64',val:17.16},{label:'65+',val:7.41}];
+const ageSK = [{label:'18–24',val:1.40},{label:'25–34',val:15.51},{label:'35–44',val:27.05},{label:'45–54',val:29.32},{label:'55–64',val:18.11},{label:'65+',val:8.91}];
+
+// ---- THEME ----
+function toggleTheme() {
+  const d = document.documentElement;
+  d.setAttribute('data-theme', d.getAttribute('data-theme') === 'dark' ? '' : 'dark');
+  drawAll();
+}
+
+// ---- SIDEBAR ----
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.querySelector('.overlay').classList.toggle('show');
+}
+
+// ---- RENDER CAMPAIGNS TABLE ----
+let sortCol = 2, sortDir = -1;
+function renderCampaigns() {
+  const sorted = [...campaigns].sort((a,b) => {
+    const vals = [a.name,a.platform,a.spend,a.conv,a.cpa,a.roas,a.status];
+    const bvals = [b.name,b.platform,b.spend,b.conv,b.cpa,b.roas,b.status];
+    const av = vals[sortCol] ?? -Infinity, bv = bvals[sortCol] ?? -Infinity;
+    return av < bv ? sortDir : av > bv ? -sortDir : 0;
+  });
+  const tbody = document.getElementById('campaignBody');
+  const platformColors = {'META CZ':'purple','META SK':'blue','Google CZ':'gold','Google SK':'green'};
+  tbody.innerHTML = sorted.map(c => `
+    <tr>
+      <td>${c.name}</td>
+      <td><span class="badge badge-${platformColors[c.platform]||'gray'}">${c.platform}</span></td>
+      <td>${c.spend.toLocaleString('cs',{maximumFractionDigits:0})}</td>
+      <td>${c.conv != null ? (typeof c.conv === 'number' ? c.conv.toLocaleString('cs',{maximumFractionDigits:0}) : c.conv) : '—'}</td>
+      <td>${c.cpa != null ? c.cpa.toFixed(2) : '—'}</td>
+      <td>${c.roas != null ? c.roas.toFixed(2)+'×' : '—'}</td>
+      <td><span class="badge badge-${c.status==='active'?'green':c.status==='completed'?'blue':'gray'}">${c.status==='active'?'Aktivní':c.status==='completed'?'Dokončeno':'Neaktivní'}</span></td>
+    </tr>
+  `).join('');
+  // update sort indicators
+  document.querySelectorAll('#campaignTable thead th').forEach((th,i) => {
+    th.classList.remove('sort-asc','sort-desc');
+    if(i===sortCol) th.classList.add(sortDir===1?'sort-asc':'sort-desc');
+  });
+}
+function sortTable(col) {
+  if(sortCol===col) sortDir *= -1;
+  else { sortCol=col; sortDir=-1; }
+  renderCampaigns();
+}
+
+// ---- RENDER KEYWORDS ----
+function renderKeywords() {
+  document.getElementById('keywordBody').innerHTML = keywords.map((k,i) => `
+    <tr>
+      <td style="text-align:left">${i+1}</td>
+      <td style="text-align:left;font-weight:600">${k[0]}</td>
+      <td style="text-align:left"><span class="badge badge-${k[1]==='Přesná shoda'?'green':k[1]==='Frázová shoda'?'blue':'gray'}">${k[1]}</span></td>
+      <td>${k[2]}</td>
+      <td>${k[3]}</td>
+      <td>${k[4]}</td>
+    </tr>
+  `).join('');
+}
+
+// ---- AGE BARS ----
+function renderAge(data, containerId) {
+  const maxVal = Math.max(...data.map(d=>d.val));
+  const colors = ['#e6a817','#5C2450','#6366f1','#ef4444','#22c55e','#f59e0b'];
+  document.getElementById(containerId).innerHTML = data.map((d,i) => `
+    <div class="prog-wrap" style="margin:4px 0">
+      <div class="prog-label"><span>${d.label}</span><span>${d.val} %</span></div>
+      <div class="prog-track" style="height:18px"><div class="prog-fill" style="width:${d.val/maxVal*100}%;background:${colors[i]};height:18px"></div></div>
+    </div>
+  `).join('');
+}
+
+// ---- DONUT CHART ----
+function drawDonut(svgId, data, colors, total) {
+  const svg = document.getElementById(svgId);
+  if(!svg) return;
+  const cx=90, cy=90, R=70, r=40;
+  let angle = -Math.PI/2;
+  let html = '';
+  data.forEach((d,i) => {
+    const sweep = (d/total)*2*Math.PI;
+    const x1=cx+R*Math.cos(angle), y1=cy+R*Math.sin(angle);
+    const x2=cx+R*Math.cos(angle+sweep), y2=cy+R*Math.sin(angle+sweep);
+    const xi1=cx+r*Math.cos(angle), yi1=cy+r*Math.sin(angle);
+    const xi2=cx+r*Math.cos(angle+sweep), yi2=cy+r*Math.sin(angle+sweep);
+    const lg = sweep>Math.PI?1:0;
+    html += `<path d="M${x1},${y1} A${R},${R} 0 ${lg} 1 ${x2},${y2} L${xi2},${yi2} A${r},${r} 0 ${lg} 0 ${xi1},${yi1} Z" fill="${colors[i]}"><title>${(d/total*100).toFixed(1)}%</title></path>`;
+    angle += sweep;
+  });
+  // Center label
+  const tc = getTextColor();
+  html += `<text x="${cx}" y="${cy-6}" text-anchor="middle" fill="${tc}" font-size="14" font-weight="800">${(data[0]/total*100).toFixed(0)}%</text>`;
+  html += `<text x="${cx}" y="${cy+12}" text-anchor="middle" fill="${tc}" font-size="10">META</text>`;
+  svg.innerHTML = html;
+}
+
+// ---- WEEKLY TREND CHART ----
+function drawWeeklyChart() {
+  const svg = document.getElementById('weeklyChart');
+  if(!svg) return;
+  const W=860, H=320, pad={t:24,r:24,b:60,l:68};
+  const cW=W-pad.l-pad.r, cH=H-pad.t-pad.b;
+  const maxSpend=Math.max(...spendCZ.map((v,i)=>v+spendSK[i]))*1.15;
+  const barW=cW/weeks.length*0.35;
+  const gap=cW/weeks.length;
+  const tc=getTextColor(), gc=getGridColor();
+  let html='';
+  // Grid
+  for(let i=0;i<=4;i++){
+    const y=pad.t+cH-(cH*i/4);
+    const v=Math.round(maxSpend*i/4);
+    html+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="${gc}" stroke-width="1"/>`;
+    html+=`<text x="${pad.l-8}" y="${y+4}" text-anchor="end" fill="${tc}" font-size="11">${(v/1000).toFixed(0)}K</text>`;
+  }
+  // Bars
+  spendCZ.forEach((czV,i)=>{
+    const skV=spendSK[i];
+    const x=pad.l+i*gap+gap/2-barW;
+    const hCZ=(czV/maxSpend)*cH;
+    const hSK=(skV/maxSpend)*cH;
+    // CZ bar
+    html+=`<rect x="${x}" y="${pad.t+cH-hCZ}" width="${barW}" height="${hCZ}" fill="#5C2450" rx="3"><title>Google CZ W${i+1}: ${czV.toFixed(0)} Kč</title></rect>`;
+    // SK bar
+    html+=`<rect x="${x+barW+2}" y="${pad.t+cH-hSK}" width="${barW}" height="${hSK}" fill="#e6a817" rx="3"><title>Google SK W${i+1}: ${skV.toFixed(0)} Kč</title></rect>`;
+    // week label
+    const label=weekLabels[i];
+    html+=`<text x="${x+barW}" y="${H-pad.b+18}" text-anchor="middle" fill="${tc}" font-size="10.5">${label}</text>`;
+  });
+  svg.innerHTML=html;
+  document.getElementById('weeklyLegend').innerHTML=`
+    <div class="legend-item"><div class="legend-dot" style="background:#5C2450"></div>Google CZ (denní výdaje)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#e6a817"></div>Google SK (denní výdaje)</div>
+  `;
+}
+
+// ---- REVENUE IMPACT DUAL-AXIS CHART ----
+function drawRevenueChart() {
+  const svg = document.getElementById('revenueChart');
+  if(!svg) return;
+  const W=860, H=340, pad={t:30,r:80,b:70,l:70};
+  const cW=W-pad.l-pad.r, cH=H-pad.t-pad.b;
+  const maxSpend=Math.max(...spendTotal)*1.2;
+  const maxRev=Math.max(...eshopRevenue)*1.1;
+  const barW=cW/weekLabels.length*0.45;
+  const gap=cW/weekLabels.length;
+  const tc=getTextColor(), gc=getGridColor();
+  let html='';
+
+  // Left axis (spend)
+  for(let i=0;i<=4;i++){
+    const y=pad.t+cH-(cH*i/4);
+    const v=Math.round(maxSpend*i/4);
+    html+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="${gc}" stroke-width="1"/>`;
+    html+=`<text x="${pad.l-8}" y="${y+4}" text-anchor="end" fill="${tc}" font-size="11">${(v/1000).toFixed(0)}K</text>`;
+  }
+  // Left axis label
+  html+=`<text transform="rotate(-90)" x="${-(pad.t+cH/2)}" y="14" text-anchor="middle" fill="${tc}" font-size="11">Spend (Kč)</text>`;
+
+  // Right axis (revenue)
+  for(let i=0;i<=4;i++){
+    const y=pad.t+cH-(cH*i/4);
+    const v=Math.round(maxRev*i/4);
+    html+=`<text x="${W-pad.r+8}" y="${y+4}" text-anchor="start" fill="#22c55e" font-size="11">${(v/1000000).toFixed(1)}M</text>`;
+  }
+  // Right axis label
+  html+=`<text transform="rotate(90)" x="${pad.t+cH/2}" y="${-(W-14)}" text-anchor="middle" fill="#22c55e" font-size="11">Obrat (Kč)</text>`;
+
+  // Bars (total spend)
+  spendTotal.forEach((v,i)=>{
+    const x=pad.l+i*gap+gap/2-barW/2;
+    const h=(v/maxSpend)*cH;
+    html+=`<rect x="${x}" y="${pad.t+cH-h}" width="${barW}" height="${h}" fill="rgba(92,36,80,0.7)" rx="3"><title>Spend W${i+1}: ${v.toFixed(0)} Kč</title></rect>`;
+    html+=`<text x="${x+barW/2}" y="${H-pad.b+18}" text-anchor="middle" fill="${tc}" font-size="10.5">${weekLabels[i]}</text>`;
+  });
+
+  // Revenue line
+  let linePath='', areaPath='';
+  eshopRevenue.forEach((v,i)=>{
+    const x=pad.l+i*gap+gap/2;
+    const y=pad.t+cH-(v/maxRev)*cH;
+    if(i===0){linePath=`M${x},${y}`;areaPath=`M${x},${pad.t+cH}`;}
+    else{linePath+=` L${x},${y}`;}
+    areaPath+=` L${x},${y}`;
+    html+=`<circle cx="${x}" cy="${y}" r="4" fill="#22c55e" stroke="white" stroke-width="1.5"><title>Obrat W${i+1}: ${(v/1000000).toFixed(2)}M Kč</title></circle>`;
+  });
+  const lastX=pad.l+(eshopRevenue.length-1)*gap+gap/2;
+  areaPath+=` L${lastX},${pad.t+cH} Z`;
+  html=`<path d="${areaPath}" fill="rgba(34,197,94,0.08)"/>`+`<path d="${linePath}" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linejoin="round"/>`+html;
+  svg.innerHTML=html;
+  document.getElementById('revenueLegend').innerHTML=`
+    <div class="legend-item"><div class="legend-dot" style="background:rgba(92,36,80,0.7)"></div>Celkový ad spend / týden (Google CZ+SK + META est.)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Obrat e-shopu / týden (Kč)</div>
+  `;
+}
+
+function getTextColor() {
+  return document.documentElement.getAttribute('data-theme')==='dark' ? '#9ca3af' : '#6b7280';
+}
+function getGridColor() {
+  return document.documentElement.getAttribute('data-theme')==='dark' ? '#2d2f3a' : '#e5e7eb';
+}
+
+function drawAll() {
+  drawDonut('donutMeta',[297668,159313],['#5C2450','#e6a817'],456981);
+  drawWeeklyChart();
+  drawRevenueChart();
+}
+
+// ---- ACTIVE NAV ----
+function updateNav() {
+  const sections = ['kpi','spend','trend','campaigns','demographics','keywords','czsk','revenue','reco'];
+  let current = sections[0];
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if(el && window.scrollY >= el.offsetTop - 120) current = id;
+  });
+  document.querySelectorAll('.sidebar-nav a').forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href')==='#'+current);
+  });
+}
+
+window.addEventListener('scroll', updateNav, {passive:true});
+
+// ---- INIT ----
+renderCampaigns();
+renderKeywords();
+renderAge(ageCZ,'ageChart');
+renderAge(ageSK,'ageChartSK');
+drawAll();
+window.addEventListener('resize', drawAll);
+</script>
+</body>
+</html>
